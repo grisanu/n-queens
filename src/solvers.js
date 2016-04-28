@@ -105,29 +105,46 @@ window._solveNQueens = function(n) {
   }
 
   // Time Complexity = O(n^n) worst case, but it's actually way better
-  // since we cut off branches the moment an invalid board is found
+  // since we cut off all rows and columns dynamically
   var buildSolutions = function(n, row, tree) {
     tree = tree || new Tree(emptyMatrix, initialColumns);
 
     if ( row < n ) {
-      for (var nextOpenColumn = 0; nextOpenColumn < tree.openColumns.length; nextOpenColumn++) {
+      // optimize for central symmetry on every board
+      var columnLimit = row === 0 ? Math.ceil(n / 2) : tree.openColumns.length;
+
+      for (var openColumnsIndex = 0; openColumnsIndex < columnLimit; openColumnsIndex++) {
         // Build new matrix to be added as a child
         var newMatrix = [];
         for (var i = 0; i < n; i++) {
           var newRow = tree.matrix[i].slice();
           newMatrix.push(newRow);
         }
-        var nextQueenColumnIndex = tree.openColumns[nextOpenColumn];
+        var nextQueenColumnIndex = tree.openColumns[openColumnsIndex];
         newMatrix[row][nextQueenColumnIndex] = 1;
 
+        // Take out the newly occupied column from openColumns
         var newOpenColumns = tree.openColumns.slice();
-        newOpenColumns.splice(_.indexOf(tree.openColumns, nextQueenColumnIndex), 1);
+        newOpenColumns.splice(openColumnsIndex, 1);
 
         // check if the added queens makes board still valid
-        if (isValidMatrix(newMatrix, row, nextQueenColumnIndex)) {
+        if (checkDiagonals(newMatrix, row, nextQueenColumnIndex)) {
           tree.children.push(new Tree(newMatrix, newOpenColumns));
           if (row === n - 1) {
             validBoards.push(newMatrix);
+
+            // Add the symmetrical duplicate unless the board's first queen
+            // is at the center column
+            var shouldNotDuplicate = (n % 2 === 1 && newMatrix[0][Math.floor(n / 2)] === 1) || n === 1;
+
+            if ( !shouldNotDuplicate ) {
+              var duplicateMatrix = [];
+              for (var i = newMatrix.length - 1; i >= 0; i--) {
+                var duplicateRow = newMatrix[i].slice();
+                duplicateMatrix.push(duplicateRow);
+              }
+              validBoards.push(duplicateMatrix);
+            }
           }
         }
       }
@@ -147,7 +164,7 @@ window._solveNQueens = function(n) {
     this.children = [];
   };
 
-  var isValidMatrix = function (matrix, rI, cI) {
+  var checkDiagonals = function (matrix, rI, cI) {
     var board = new Board(matrix);
     var majorDiagColumnIndex = cI - rI;
     var minorDiagColumnIndex = cI + rI;
