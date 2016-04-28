@@ -58,7 +58,7 @@ describe('solvers', function() {
             return memo + col;
           }, 0);
         }, 0);
-
+ 
         expect(numPieces).to.equal(0);
         expect(solutionBoard.get('n')).to.equal(n);
       });
