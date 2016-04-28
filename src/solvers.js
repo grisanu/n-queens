@@ -30,7 +30,7 @@ window.findNRooksSolution = function(n) {
     solution.push(row);
   }
 
-  console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution[0]));
+  console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution));
   return solution;
 };
 
@@ -52,8 +52,25 @@ window.countNRooksSolutions = function(n) {
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
 window.findNQueensSolution = function(n) {
-  var solution = new Board({ n: n });
+  var solution = window._solveNQueens(n);
 
+  console.log('Single solution for ' + n + ' queens:', JSON.stringify(solution[0]));
+  return solution;
+};
+
+// return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
+window.countNQueensSolutions = function(n) {
+  var solutionCount = window._solveNQueens(n).length;
+
+  if (n === 0) {
+    solutionCount = 1;
+  }
+
+  console.log('Number of solutions for ' + n + ' queens:', solutionCount);
+  return solutionCount;
+};
+
+window._solveNQueens = function(n) {
   // build empty starting matrix
   var emptyMatrix = [];
   var emptyRow = [];
@@ -95,60 +112,32 @@ window.findNQueensSolution = function(n) {
     this.children = [];
   };
     
-  var test = buildTree(n, 0);
+  var possibilities = buildTree(n, 0);
+  var validBoards = [];
 
-  // loop through all spaces on board
-  // var queens = 0;
+  var checkForValidTree = function (tree) {
+    if (isValidMatrix(tree.matrix)) {
+      if (tree.children.length === 0) {
+        validBoards.push(tree.matrix);
+      }
 
-  // var innerRecurse = function (board) {
-  //   for (var row = 0; row < n; row++) {
-  //     for (var col = 0; col < n; col++) {
-        
-  //       // check to see if spot is occupied
-  //       if (board.attributes[row][col] === 1) {
-  //         continue;
-  //       }
-        
-  //       // add queen
-  //       board.attributes[row][col] = 1;
-  //       queens++;
+      for (var child = 0; child < tree.children.length; child++) {
+        checkForValidTree(tree.children[child]);
+      }
+    }
+  };
 
-  //       //check to see if valid board once add a queen
-  //       if (board.hasAnyRowConflicts() || 
-  //           board.hasAnyColConflicts() || 
-  //           board.hasAnyMajorDiagonalConflicts() || 
-  //           board.hasAnyMinorDiagonalConflicts() ) {
-  //         // invalid board, so remove queen
-  //         board.attributes[row][col] = 0;
-  //         queens--;
-  //         return;
-  //       }
+  var isValidMatrix = function (matrix) {
+    var board = new Board(matrix);
+    if (board.hasAnyRowConflicts() || 
+        board.hasAnyColConflicts() || 
+        board.hasAnyMajorDiagonalConflicts() || 
+        board.hasAnyMinorDiagonalConflicts() ) {
+      return false;
+    }
+    return true;
+  };
 
-  //       // placed n queens on board
-  //       if (queens === n) {
-  //        var matrix = [];
-  //        for (var row in board.attributes) {
-  //          if (row < n) {
-  //            matrix.push(board.attributes[row]);
-  //          }
-  //        }
-  //        console.log('Single solution for ' + n + ' queens:', JSON.stringify(matrix));
-  //        return matrix;
-  //       }
-
-  //       // repeat on changed board
-  //       innerRecurse(board);
-  //     }
-  //   }
-  // };
-
-  // innerRecurse(solution);
-};
-
-// return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
-window.countNQueensSolutions = function(n) {
-  var solutionCount = undefined; //fixme
-
-  console.log('Number of solutions for ' + n + ' queens:', solutionCount);
-  return solutionCount;
+  checkForValidTree(possibilities);
+  return validBoards;
 };

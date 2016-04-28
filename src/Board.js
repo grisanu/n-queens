@@ -78,6 +78,7 @@
     // --------------------------------------------------------------
     //
     // test if a specific row on this board contains a conflict
+    // Time Complexity 
     hasRowConflictAt: function(rowIndex) {
       var found = 0;
       // debugger;
