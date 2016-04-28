@@ -114,7 +114,7 @@ window._solveNQueens = function(n) {
   }
 
   // Time Complexity = O(n^n) worst case, but it's actually way better
-  // since we cut off branches the moment an invalid board is found
+  // since we cut off all rows and columns dynamically
   var buildSolutions = function(n, row, tree) {
     tree = tree || new Tree(emptyMatrix, initialPositions);
 
@@ -126,6 +126,7 @@ window._solveNQueens = function(n) {
           var newRow = tree.matrix[i].slice();
           newMatrix.push(newRow);
         }
+
         var nextQueenColumnIndex = tree.openPositions[row][nextOpenColumn];
         newMatrix[row][nextQueenColumnIndex] = 1;
 
@@ -149,7 +150,7 @@ window._solveNQueens = function(n) {
           // remove occupied major diagonal
           // remove occupied minor diagonal
           for (var key in indexColAndMajAndMin) {
-            delete newOpenColumns[key]
+            delete newOpenColumns[key];
           }
         
           newOpenPosition[rowNo] = newOpenColumns;
@@ -189,7 +190,7 @@ window._solveNQueens = function(n) {
     this.children = [];
   };
 
-  var isValidMatrix = function (matrix, rI, cI) {
+  var checkDiagonals = function (matrix, rI, cI) {
     var board = new Board(matrix);
     var majorDiagColumnIndex = cI - rI;
     var minorDiagColumnIndex = cI + rI;
