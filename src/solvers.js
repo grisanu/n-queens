@@ -113,7 +113,7 @@ window._solveNQueens = function(n) {
         newMatrix[row][nextQueenColumnIndex] = 1;
 
         // check if addition makes board still valid
-        if (isValidMatrix(newMatrix)) {
+        if (isValidMatrix(newMatrix, row, nextQueenColumnIndex)) {
           tree.children.push(new Tree(newMatrix));
           if (row === n - 1) {
             validBoards.push(newMatrix);
@@ -135,12 +135,14 @@ window._solveNQueens = function(n) {
     this.children = [];
   };
 
-  var isValidMatrix = function (matrix) {
+  var isValidMatrix = function (matrix, rI, cI) {
     var board = new Board(matrix);
-    if (board.hasAnyRowConflicts() || 
-        board.hasAnyColConflicts() || 
-        board.hasAnyMajorDiagonalConflicts() || 
-        board.hasAnyMinorDiagonalConflicts() ) {
+    var majorDiagColumnIndex = cI - rI;
+    var minorDiagColumnIndex = cI + rI;
+    if (board.hasRowConflictAt(rI) || 
+        board.hasColConflictAt(cI) || 
+        board.hasMajorDiagonalConflictAt(majorDiagColumnIndex) || 
+        board.hasMinorDiagonalConflictAt(minorDiagColumnIndex) ) {
       return false;
     }
     return true;
