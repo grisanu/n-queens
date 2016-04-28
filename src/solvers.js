@@ -14,7 +14,7 @@
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n rooks placed such that none of them can attack each other
 
 
-
+// Time Complexity = O(n^2)
 window.findNRooksSolution = function(n) {
   var solution = [];
 
@@ -35,6 +35,7 @@ window.findNRooksSolution = function(n) {
 };
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
+// Time Complexity = O(n)
 window.countNRooksSolutions = function(n) {
   var factorial = function(n) {
     if (n > 0) {
@@ -70,6 +71,7 @@ window.countNQueensSolutions = function(n) {
   return solutionCount;
 };
 
+// Time Complexity = O(n)
 window._solveNQueens = function(n) {
   // build empty starting matrix
   var emptyMatrix = [];
@@ -81,6 +83,7 @@ window._solveNQueens = function(n) {
     emptyMatrix.push(emptyRow);
   }
 
+  // Time Complexity = O(n^n) --> pretty awful, way too much for one thread to handle
   var buildTree = function(n, row, tree) {
     tree = tree || new Tree(emptyMatrix);
 
@@ -93,7 +96,7 @@ window._solveNQueens = function(n) {
           newMatrix.push(newRow);
         }
         newMatrix[row][nextQueenColumnIndex] = 1;
-
+        
         tree.children.push(new Tree(newMatrix));
       }
       
@@ -115,6 +118,7 @@ window._solveNQueens = function(n) {
   var possibilities = buildTree(n, 0);
   var validBoards = [];
 
+  // Time Complexity = O(n^2), roughly
   var checkForValidTree = function (tree) {
     if (isValidMatrix(tree.matrix)) {
       if (tree.children.length === 0) {
