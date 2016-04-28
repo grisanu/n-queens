@@ -98,8 +98,9 @@ window._solveNQueens = function(n) {
     emptyMatrix.push(emptyRow);
   }
 
-  // Time Complexity = O(n^n) --> pretty awful, way too much for one thread to handle
-  var buildSolutions = function(n, row, tree) {
+  // Time Complexity = O(n^n) worst case, but it's actually way better
+  // since we cut off branches the moment an invalid board is found
+  var buildSolutions = function(n, row, topRowIndex, tree) {
     tree = tree || new Tree(emptyMatrix);
 
     if ( row < n ) {
@@ -112,7 +113,7 @@ window._solveNQueens = function(n) {
         }
         newMatrix[row][nextQueenColumnIndex] = 1;
 
-        // check if addition makes board still valid
+        // check if the added queens makes board still valid
         if (isValidMatrix(newMatrix, row, nextQueenColumnIndex)) {
           tree.children.push(new Tree(newMatrix));
           if (row === n - 1) {
@@ -123,7 +124,7 @@ window._solveNQueens = function(n) {
       
       for (var i = 0; i < tree.children.length; i++) {
         var child = tree.children[i];
-        buildSolutions(n, row + 1, child);
+        buildSolutions(n, row + 1, topRowIndex, child);
       }   
     }
     return tree;
@@ -149,7 +150,7 @@ window._solveNQueens = function(n) {
   };  
 
   var validBoards = [];
-  buildSolutions(n, 0);
+  buildSolutions(n, 0, 0);
 
   return validBoards;
 };
