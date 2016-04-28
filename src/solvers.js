@@ -98,24 +98,34 @@ window._solveNQueens = function(n) {
     emptyMatrix.push(emptyRow);
   }
 
+  // build initial openColumns array
+  var initialColumns = [];
+  for (var i = 0; i < n; i++) {
+    initialColumns.push(i);
+  }
+
   // Time Complexity = O(n^n) worst case, but it's actually way better
   // since we cut off branches the moment an invalid board is found
-  var buildSolutions = function(n, row, topRowIndex, tree) {
-    tree = tree || new Tree(emptyMatrix);
+  var buildSolutions = function(n, row, tree) {
+    tree = tree || new Tree(emptyMatrix, initialColumns);
 
     if ( row < n ) {
-      for (var nextQueenColumnIndex = 0; nextQueenColumnIndex < n; nextQueenColumnIndex++) {
+      for (var nextOpenColumn = 0; nextOpenColumn < tree.openColumns.length; nextOpenColumn++) {
         // Build new matrix to be added as a child
         var newMatrix = [];
         for (var i = 0; i < n; i++) {
           var newRow = tree.matrix[i].slice();
           newMatrix.push(newRow);
         }
+        var nextQueenColumnIndex = tree.openColumns[nextOpenColumn];
         newMatrix[row][nextQueenColumnIndex] = 1;
+
+        var newOpenColumns = tree.openColumns.slice();
+        newOpenColumns.splice(_.indexOf(tree.openColumns, nextQueenColumnIndex), 1);
 
         // check if the added queens makes board still valid
         if (isValidMatrix(newMatrix, row, nextQueenColumnIndex)) {
-          tree.children.push(new Tree(newMatrix));
+          tree.children.push(new Tree(newMatrix, newOpenColumns));
           if (row === n - 1) {
             validBoards.push(newMatrix);
           }
@@ -124,15 +134,16 @@ window._solveNQueens = function(n) {
       
       for (var i = 0; i < tree.children.length; i++) {
         var child = tree.children[i];
-        buildSolutions(n, row + 1, topRowIndex, child);
+        buildSolutions(n, row + 1, child);
       }   
     }
     return tree;
   }; 
 
   // Simple tree class for holding boards
-  var Tree = function(matrix) {
+  var Tree = function(matrix, openColumns) {
     this.matrix = matrix;
+    this.openColumns = openColumns;
     this.children = [];
   };
 
@@ -140,9 +151,7 @@ window._solveNQueens = function(n) {
     var board = new Board(matrix);
     var majorDiagColumnIndex = cI - rI;
     var minorDiagColumnIndex = cI + rI;
-    if (board.hasRowConflictAt(rI) || 
-        board.hasColConflictAt(cI) || 
-        board.hasMajorDiagonalConflictAt(majorDiagColumnIndex) || 
+    if (board.hasMajorDiagonalConflictAt(majorDiagColumnIndex) || 
         board.hasMinorDiagonalConflictAt(minorDiagColumnIndex) ) {
       return false;
     }
@@ -150,7 +159,7 @@ window._solveNQueens = function(n) {
   };  
 
   var validBoards = [];
-  buildSolutions(n, 0, 0);
+  buildSolutions(n, 0);
 
   return validBoards;
 };
