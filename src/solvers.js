@@ -99,51 +99,93 @@ window._solveNQueens = function(n) {
   }
 
   // build initial openColumns array
-  var initialColumns = [];
+  var initialPositions = {};
+  var initialRow = {};
+  var rowNumber1 = {};
   for (var i = 0; i < n; i++) {
-    initialColumns.push(i);
+    initialRow[i] = i;
+  }
+  for (var i = 0; i < Math.ceil(n/2); i++) {
+    rowNumber1[i] = i;
+  }
+  initialPositions[0] = rowNumber1;
+  for (var i = 1; i < n; i++) {
+    initialPositions[i] = initialRow;
   }
 
   // Time Complexity = O(n^n) worst case, but it's actually way better
   // since we cut off branches the moment an invalid board is found
   var buildSolutions = function(n, row, tree) {
-    tree = tree || new Tree(emptyMatrix, initialColumns);
+    tree = tree || new Tree(emptyMatrix, initialPositions);
 
     if ( row < n ) {
-      for (var nextOpenColumn = 0; nextOpenColumn < tree.openColumns.length; nextOpenColumn++) {
+      for (var nextOpenColumn in tree.openPositions[row]) {
         // Build new matrix to be added as a child
         var newMatrix = [];
         for (var i = 0; i < n; i++) {
           var newRow = tree.matrix[i].slice();
           newMatrix.push(newRow);
         }
-        var nextQueenColumnIndex = tree.openColumns[nextOpenColumn];
+        var nextQueenColumnIndex = tree.openPositions[row][nextOpenColumn];
         newMatrix[row][nextQueenColumnIndex] = 1;
 
-        var newOpenColumns = tree.openColumns.slice();
-        newOpenColumns.splice(_.indexOf(tree.openColumns, nextQueenColumnIndex), 1);
-
-        // check if the added queens makes board still valid
-        if (isValidMatrix(newMatrix, row, nextQueenColumnIndex)) {
-          tree.children.push(new Tree(newMatrix, newOpenColumns));
-          if (row === n - 1) {
-            validBoards.push(newMatrix);
+        var newOpenPosition = {};
+        for (var rowNo in tree.openPositions) {
+          var newOpenColumns = {};
+          _.extend(newOpenColumns, tree.openPositions[rowNo]);
+          
+          var colNoInRowNoMaj = nextQueenColumnIndex - row + Number(rowNo);
+          var colNoInRowNoMin = nextQueenColumnIndex + row - Number(rowNo);
+          var indexColAndMajAndMin = {};
+          for (var i in newOpenColumns) {
+            if (newOpenColumns[i] === colNoInRowNoMaj ||
+                newOpenColumns[i] === colNoInRowNoMin ||
+                newOpenColumns[i] === nextQueenColumnIndex) {
+              indexColAndMajAndMin[i] = i;
+            }
           }
+
+          // remove occupied columns
+          // remove occupied major diagonal
+          // remove occupied minor diagonal
+          for (var key in indexColAndMajAndMin) {
+            delete newOpenColumns[key]
+          }
+        
+          newOpenPosition[rowNo] = newOpenColumns;
+        }
+
+        tree.children.push(new Tree(newMatrix, newOpenPosition));
+///     
+        if (row === n - 1) {
+          validBoards.push(newMatrix);
+
+          var shouldNotDuplicate = (n % 2 === 1 && newMatrix[0][Math.floor(n/2)] === 1 || n === 1);
+
+          if (!shouldNotDuplicate) {
+            var duplicateMatrix = [];
+            for (var i = newMatrix.length -1; i >= 0; i--) {
+              var duplicateRow = newMatrix[i].slice();
+              duplicateMatrix.push(duplicateRow);
+            }
+            validBoards.push(duplicateMatrix);
+          }
+///     
         }
       }
-      
+              
       for (var i = 0; i < tree.children.length; i++) {
         var child = tree.children[i];
         buildSolutions(n, row + 1, child);
-      }   
-    }
+      }  
+    } 
     return tree;
   }; 
 
   // Simple tree class for holding boards
-  var Tree = function(matrix, openColumns) {
+  var Tree = function(matrix, openPositions) {
     this.matrix = matrix;
-    this.openColumns = openColumns;
+    this.openPositions = openPositions; // object where key corresponds to row
     this.children = [];
   };
 
