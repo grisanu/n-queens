@@ -157,7 +157,7 @@ window._solveNQueens = function(n) {
         }
 
         tree.children.push(new Tree(newMatrix, newOpenPosition));
-///     
+
         if (row === n - 1) {
           validBoards.push(newMatrix);
 
@@ -165,16 +165,15 @@ window._solveNQueens = function(n) {
 
           if (!shouldNotDuplicate) {
             var duplicateMatrix = [];
-            for (var i = newMatrix.length -1; i >= 0; i--) {
+            for (var i = newMatrix.length - 1; i >= 0; i--) {
               var duplicateRow = newMatrix[i].slice();
               duplicateMatrix.push(duplicateRow);
             }
             validBoards.push(duplicateMatrix);
           }
-///     
         }
       }
-              
+    
       for (var i = 0; i < tree.children.length; i++) {
         var child = tree.children[i];
         buildSolutions(n, row + 1, child);
@@ -189,17 +188,6 @@ window._solveNQueens = function(n) {
     this.openPositions = openPositions; // object where key corresponds to row
     this.children = [];
   };
-
-  var checkDiagonals = function (matrix, rI, cI) {
-    var board = new Board(matrix);
-    var majorDiagColumnIndex = cI - rI;
-    var minorDiagColumnIndex = cI + rI;
-    if (board.hasMajorDiagonalConflictAt(majorDiagColumnIndex) || 
-        board.hasMinorDiagonalConflictAt(minorDiagColumnIndex) ) {
-      return false;
-    }
-    return true;
-  };  
 
   var validBoards = [];
   buildSolutions(n, 0);
