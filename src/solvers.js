@@ -55,8 +55,15 @@ window.countNRooksSolutions = function(n) {
 window.findNQueensSolution = function(n) {
   var solution = window._solveNQueens(n);
 
+  if (n === 0) {
+    return 0;
+  }
+  if (n === 1) {
+    return [[1]];
+  }
+
   console.log('Single solution for ' + n + ' queens:', JSON.stringify(solution[0]));
-  return solution;
+  return solution[0];
 };
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
@@ -84,7 +91,7 @@ window._solveNQueens = function(n) {
   }
 
   // Time Complexity = O(n^n) --> pretty awful, way too much for one thread to handle
-  var buildTree = function(n, row, tree) {
+  var buildSolutions = function(n, row, tree) {
     tree = tree || new Tree(emptyMatrix);
 
     if ( row < n ) {
@@ -96,16 +103,21 @@ window._solveNQueens = function(n) {
           newMatrix.push(newRow);
         }
         newMatrix[row][nextQueenColumnIndex] = 1;
-        
-        tree.children.push(new Tree(newMatrix));
+
+        // check if addition makes board still valid
+        if (isValidMatrix(newMatrix)) {
+          tree.children.push(new Tree(newMatrix));
+          if (row === n - 1) {
+            validBoards.push(newMatrix);
+          }
+        }
       }
       
       for (var i = 0; i < tree.children.length; i++) {
         var child = tree.children[i];
-        buildTree(n, row + 1, child);
+        buildSolutions(n, row + 1, child);
       }   
     }
-
     return tree;
   }; 
 
@@ -113,22 +125,6 @@ window._solveNQueens = function(n) {
   var Tree = function(matrix) {
     this.matrix = matrix;
     this.children = [];
-  };
-    
-  var possibilities = buildTree(n, 0);
-  var validBoards = [];
-
-  // Time Complexity = O(n^2), roughly
-  var checkForValidTree = function (tree) {
-    if (isValidMatrix(tree.matrix)) {
-      if (tree.children.length === 0) {
-        validBoards.push(tree.matrix);
-      }
-
-      for (var child = 0; child < tree.children.length; child++) {
-        checkForValidTree(tree.children[child]);
-      }
-    }
   };
 
   var isValidMatrix = function (matrix) {
@@ -140,8 +136,9 @@ window._solveNQueens = function(n) {
       return false;
     }
     return true;
-  };
+  };  
 
-  checkForValidTree(possibilities);
+  var validBoards = [];
+  var possibilities = buildSolutions(n, 0);
   return validBoards;
 };
